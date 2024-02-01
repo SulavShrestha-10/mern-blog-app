@@ -7,17 +7,17 @@ import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
 import { storeInSession } from "../common/session";
 import { UserContext } from "../context/UserContext";
+import { authWithGoogle } from "../common/firebase";
 
 const UserAuthForm = ({ type }) => {
-	const { userAuth: { access_token } = {}, setUserAuth } = useContext(UserContext);
-	console.log(access_token);
+	const { userAuth: { access_token } = {}, setUserAuth, userAuth } = useContext(UserContext);
+	console.log(userAuth);
 	const authenticateUser = (serverRoute, formData) => {
 		axios
 			.post(`${import.meta.env.VITE_SERVER_DOMAIN}${serverRoute}`, formData)
 			.then(({ data }) => {
-				const { user } = data;
-				storeInSession("user", JSON.stringify(user));
-				setUserAuth(user);
+				storeInSession("user", JSON.stringify(data));
+				setUserAuth(data);
 			})
 			.catch(({ response }) => {
 				toast.error(response?.data?.error);
@@ -45,7 +45,21 @@ const UserAuthForm = ({ type }) => {
 			return toast.error("Password must be 6 to 20 characters long with a numeric, uppercase and lowercase letters!");
 		authenticateUser(serverRoute, formData);
 	};
-
+	const handleGoogleAuth = async (e) => {
+		e.preventDefault();
+		authWithGoogle()
+			.then((user) => {
+				let serverRoute = "/google-auth";
+				let formData = {
+					access_token: user?.accessToken,
+				};
+				authenticateUser(serverRoute, formData);
+			})
+			.catch((err) => {
+				toast.error("Error while trying to login with google!");
+				console.log(err);
+			});
+	};
 	return access_token ? (
 		<Navigate to="/" />
 	) : (
@@ -69,7 +83,7 @@ const UserAuthForm = ({ type }) => {
 						<p>or</p>
 						<hr className="w-1/2 border-black" />
 					</div>
-					<button className="btn-dark flex items-center gap-4 justify-center w-[90%] center">
+					<button className="btn-dark flex items-center gap-4 justify-center w-[90%] center" onClick={handleGoogleAuth}>
 						<img src={googleIcon} alt="Google Logo" className="w-5 " />
 						continue with google
 					</button>

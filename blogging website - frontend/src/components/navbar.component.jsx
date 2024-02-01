@@ -6,6 +6,7 @@ import { UserContext } from "../context/UserContext";
 import UserNavigationPanel from "./user-navigation.component";
 const Navbar = () => {
 	const [showSearchBox, setShowSearchBox] = useState(false);
+	const [showUserPanel, setShowUserPanel] = useState(false);
 	const { userAuth } = useContext(UserContext);
 	const { access_token = {}, profile_img } = userAuth || {};
 	return (
@@ -46,11 +47,18 @@ const Navbar = () => {
 								<i className="fi fi-rr-bell text-2xl block mt-2"></i>
 							</button>
 						</Link>
-						<div className="relative">
+						<div
+							className="relative"
+							onClick={() => setShowUserPanel(!showUserPanel)}
+							onBlur={() => {
+								setTimeout(() => {
+									setShowUserPanel(false);
+								}, 200);
+							}}>
 							<button className="w-12 h-12 mt-2">
 								<img src={profile_img} alt="Profile Image" className="w-full h-full object-cover rounded-full" />
 							</button>
-							<UserNavigationPanel />
+							{showUserPanel && <UserNavigationPanel />}
 						</div>
 					</>
 				) : (
