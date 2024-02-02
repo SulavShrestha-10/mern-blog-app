@@ -1,20 +1,32 @@
 import express from "express";
 import mongoose from "mongoose";
-import "dotenv/config";
 import bcrypt from "bcrypt";
 import User from "./Schema/User.js";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
+import cloudinary from "cloudinary";
 import { getAuth } from "firebase-admin/auth";
 import serviceAccKey from "./firebase-config.json" assert { type: "json" };
+import multer from "multer";
+import "dotenv/config";
 
 const app = express();
 
 let PORT = 4000;
 
 admin.initializeApp({ credential: admin.credential.cert(serviceAccKey) });
+
+cloudinary.config({
+	cloud_name: process.env.CLOUD_NAME,
+	api_key: process.env.CLOUD_API_KEY,
+	api_secret: process.env.CLOUD_API_SECRET,
+});
+
+// Multer setup for handling file uploads
+const storage = multer.diskStorage({});
+const upload = multer({ storage: storage });
 
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
@@ -42,6 +54,8 @@ const generateUsername = async (email) => {
 	usernameExists ? (username += nanoid().substring(0, 5)) : "";
 	return username;
 };
+
+// * Authentication Flow
 
 // * Sign Up Request
 app.post("/signup", (req, res) => {
@@ -144,6 +158,17 @@ app.post("/google-auth", async (req, res) => {
 		.catch((err) => {
 			return res.status(500).json({ error: "Failed to authenticate with google!" });
 		});
+});
+
+// * Upload Banner
+app.post("/upload-banner", upload.single("uploadBanner"), async (req, res) => {
+	try {
+		const result = await cloudinary.v2.uploader.upload(req.file.path);
+		res.status(200).json({ secure_url: result.secure_url });
+	} catch (error) {
+		console.error("Error uploading image to Cloudinary:", error);
+		res.status(500).json({ error: "Failed to upload image to Cloudinary" });
+	}
 });
 
 app.listen(PORT, () => {

@@ -3,15 +3,14 @@ import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
 import { Link, Navigate } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import axios from "axios";
 import { storeInSession } from "../common/session";
 import { UserContext } from "../context/UserContext";
 import { authWithGoogle } from "../common/firebase";
 
 const UserAuthForm = ({ type }) => {
-	const { userAuth: { access_token } = {}, setUserAuth, userAuth } = useContext(UserContext);
-	console.log(userAuth);
+	const { userAuth: { access_token } = {}, setUserAuth } = useContext(UserContext);
 	const authenticateUser = (serverRoute, formData) => {
 		axios
 			.post(`${import.meta.env.VITE_SERVER_DOMAIN}${serverRoute}`, formData)
@@ -66,7 +65,6 @@ const UserAuthForm = ({ type }) => {
 		<AnimationWrapper keyValue={type}>
 			<section className="h-cover flex items-center justify-center">
 				<form id="authForm" className="w-[80%] max-w-[400px]">
-					<Toaster />
 					<h1 className="text-4xl font-gelasio capitalize text-center mb-24">
 						{type === "sign-in" ? "Welcome back" : "Join us today"}
 					</h1>
