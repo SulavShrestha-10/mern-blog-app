@@ -99,7 +99,7 @@ const BlogEditor = () => {
 		if (!title.length) return toast.error("Write blog title before saving it as a draft!");
 		let loadingToast = toast.loading("Saving as draft...");
 		e.target.classList.add("disable");
-		if (!textEditor.isReady) {
+		if (textEditor.isReady) {
 			textEditor.save().then((content) => {
 				let blogObject = { title, banner, content, des, tags, draft: true };
 				console.log(blogObject);
