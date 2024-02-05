@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import User from "./Schema/User.js";
+import Blog from "./Schema/Blog.js";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
@@ -55,6 +56,16 @@ const generateUsername = async (email) => {
 	return username;
 };
 
+const authenticateUser = (req, res, next) => {
+	const authHeader = req.headers["authorization"];
+	const token = authHeader && authHeader.split(" ")[1];
+	if (token === null) return res.status(404).json({ error: "No access token!" });
+	jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+		if (err) res.status(403).json({ error: "Access token invalid!" });
+		req.user = user.id;
+		next();
+	});
+};
 // * Authentication Flow
 
 // * Sign Up Request
@@ -169,6 +180,43 @@ app.post("/upload-banner", upload.single("file"), async (req, res) => {
 		console.error("Error uploading image to Cloudinary:", error);
 		res.status(500).json({ error: "Failed to upload image to Cloudinary" });
 	}
+});
+
+app.post("/create-blog", authenticateUser, (req, res) => {
+	let authorId = req.user;
+	let { title, des, banner, tags, content, draft } = req.body;
+	if (!title.length) res.status(403).json({ error: "You must provide a title for blog!" });
+	if (!banner.length) res.status(403).json({ error: "You must provide a banner for blog!" });
+	if (!des.length || des.length > 200)
+		res.status(403).json({ error: "You must provide a description under 200 characters!" });
+	if (!content.blocks.length) res.status(403).json({ error: "You must provide content for blog!" });
+	if (!tags.length || tags.length > 10)
+		res.status(403).json({ error: "You must provide tags for blog, maximum 10 tags!" });
+	tags = tags.map((tag) => tag.toLowerCase());
+	let blog_id =
+		title
+			.replace(/[^a-zA-Z0-9]/g, " ")
+			.replace(/\s+/g, "-")
+			.trim() + nanoid(10);
+	let blog = new Blog({ title, des, content, banner, tags, author: authorId, blog_id, draft: Boolean(draft) });
+	blog
+		.save()
+		.then((blog) => {
+			let incrementVal = draft ? 0 : 1;
+			User.findOneAndUpdate(
+				{ _id: authorId },
+				{ $inc: { "account_info.total_posts": incrementVal }, $push: { blogs: blog._id } },
+			)
+				.then((user) => {
+					res.status(200).json({ id: blog.blog_id });
+				})
+				.catch((err) => {
+					res.status(500).json({ error: "Failed to update total posts of user!" });
+				});
+		})
+		.catch((err) => {
+			res.status(500).json({ error: err.message });
+		});
 });
 
 app.listen(PORT, () => {
