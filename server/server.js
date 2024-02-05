@@ -186,12 +186,15 @@ app.post("/create-blog", authenticateUser, (req, res) => {
 	let authorId = req.user;
 	let { title, des, banner, tags, content, draft } = req.body;
 	if (!title.length) res.status(403).json({ error: "You must provide a title for blog!" });
-	if (!banner.length) res.status(403).json({ error: "You must provide a banner for blog!" });
-	if (!des.length || des.length > 200)
-		res.status(403).json({ error: "You must provide a description under 200 characters!" });
-	if (!content.blocks.length) res.status(403).json({ error: "You must provide content for blog!" });
-	if (!tags.length || tags.length > 10)
-		res.status(403).json({ error: "You must provide tags for blog, maximum 10 tags!" });
+	if (!draft) {
+		if (!banner.length) res.status(403).json({ error: "You must provide a banner for blog!" });
+		if (!des.length || des.length > 200)
+			res.status(403).json({ error: "You must provide a description under 200 characters!" });
+		if (!content.blocks.length) res.status(403).json({ error: "You must provide content for blog!" });
+		if (!tags.length || tags.length > 10)
+			res.status(403).json({ error: "You must provide tags for blog, maximum 10 tags!" });
+	}
+
 	tags = tags.map((tag) => tag.toLowerCase());
 	let blog_id =
 		title
