@@ -14,28 +14,50 @@ const BlogEditor = () => {
 		blog,
 		blog: { title, banner, content, tags, des },
 		setBlog,
+		textEditor,
+		setTextEditor,
+		setEditorState,
 	} = useContext(EditorContext);
 
 	useEffect(() => {
-		let editor = new EditorJS({
-			holderId: "textEditor",
-			data: "",
-			placeholder: "Let's write a awesome story",
-			tools: tools,
-		});
+		setTextEditor(
+			new EditorJS({
+				holderId: "textEditor",
+				data: "",
+				placeholder: "Let's write a awesome story",
+				tools: tools,
+			}),
+		);
 	}, []);
-
+	const publishBlog = () => {
+		if (!banner.length) return toast.error("Upload a blog banner to publish the blog!");
+		if (!title.length) return toast.error("Write blog title to publish the blog!");
+		if (textEditor.isReady) {
+			textEditor
+				.save()
+				.then((data) => {
+					if (data.blocks.length) {
+						setBlog({ ...blog, content: data });
+						setEditorState("publish");
+					} else {
+						toast.error("Write something in your blog to publish it!");
+					}
+				})
+				.catch((err) => console.log(err));
+		}
+	};
 	const handleBannerUpload = async (e) => {
 		const serverRoute = "/upload-banner";
 		try {
 			const img = e.target.files && e.target.files[0];
+			console.log(img);
 			if (!img) {
 				toast.error("No image selected");
 				return;
 			}
 			let loadingToast = toast.loading("Uploading...");
 			const formData = new FormData();
-			formData.append("uploadBanner", img);
+			formData.append("file", img);
 			formData.append("upload_preset", "MERNBlog");
 			formData.append("cloud_name", import.meta.env.VITE_CLOUD_NAME);
 			// Make a request to your backend route for Cloudinary image upload
@@ -73,7 +95,9 @@ const BlogEditor = () => {
 				</Link>
 				<p className="max-md:hidden text-black line-clamp-1 w-full">{title.length ? title : "New Blog"}</p>
 				<div className="flex ml-auto gap-4">
-					<button className="btn-dark py-2">Publish</button>
+					<button className="btn-dark py-2" onClick={publishBlog}>
+						Publish
+					</button>
 					<button className="btn-light py-2">Save Draft</button>
 				</div>
 			</nav>

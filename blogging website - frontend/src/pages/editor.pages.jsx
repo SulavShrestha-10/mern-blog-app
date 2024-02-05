@@ -7,9 +7,15 @@ import { EditorContext, EditorProvider } from "../context/EditorContext";
 
 const Editor = () => {
 	const { userAuth: { access_token } = {} } = useContext(UserContext);
-	const { editor } = useContext(EditorContext);
-	console.log(editor);
-	return access_token === null ? <Navigate to="/signin" /> : editor === "editor" ? <BlogEditor /> : <PublishForm />;
+	const { editorState } = useContext(EditorContext);
+	console.log(editorState);
+	return access_token === null ? (
+		<Navigate to="/signin" />
+	) : editorState === "editor" ? (
+		<BlogEditor />
+	) : (
+		<PublishForm />
+	);
 };
 
 export default Editor;

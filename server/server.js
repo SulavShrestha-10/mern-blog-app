@@ -161,7 +161,7 @@ app.post("/google-auth", async (req, res) => {
 });
 
 // * Upload Banner
-app.post("/upload-banner", upload.single("uploadBanner"), async (req, res) => {
+app.post("/upload-banner", upload.single("file"), async (req, res) => {
 	try {
 		const result = await cloudinary.v2.uploader.upload(req.file.path);
 		res.status(200).json({ secure_url: result.secure_url });

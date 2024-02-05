@@ -12,6 +12,11 @@ const blogStructure = {
 export const EditorContext = createContext({});
 export const EditorProvider = ({ children }) => {
 	const [blog, setBlog] = useState(blogStructure);
-	const [editor, setEditor] = useState("editor");
-	return <EditorContext.Provider value={{ blog, setBlog, setEditor, editor }}>{children}</EditorContext.Provider>;
+	const [editorState, setEditorState] = useState("editor");
+	const [textEditor, setTextEditor] = useState({ isReady: false });
+	return (
+		<EditorContext.Provider value={{ blog, setBlog, setEditorState, editorState, textEditor, setTextEditor }}>
+			{children}
+		</EditorContext.Provider>
+	);
 };
