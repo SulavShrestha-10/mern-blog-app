@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 
-const blogStructure = {
+export const blogStructure = {
 	title: "",
 	banner: "",
 	content: [],

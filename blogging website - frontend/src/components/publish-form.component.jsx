@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import AnimationWrapper from "../common/page-animation";
 import { toast } from "react-hot-toast";
-import { EditorContext } from "../context/EditorContext";
+import { EditorContext, blogStructure } from "../context/EditorContext";
 import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../context/UserContext";
@@ -12,8 +12,10 @@ const PublishForm = () => {
 		blog,
 		setBlog,
 		blog: { title, banner, content, tags, des },
+		textEditor,
 		setEditorState,
 	} = useContext(EditorContext);
+	console.log("Pubilsh", textEditor);
 	const { userAuth } = useContext(UserContext);
 	const { access_token = {} } = userAuth || {};
 	let characterLimit = 200;
@@ -69,6 +71,7 @@ const PublishForm = () => {
 				setTimeout(() => {
 					navigate("/");
 					setEditorState("editor");
+					setBlog(blogStructure);
 				}, 500);
 			})
 			.catch(({ response }) => {

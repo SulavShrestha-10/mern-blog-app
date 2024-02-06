@@ -28,13 +28,16 @@ const BlogEditor = () => {
 			setTextEditor(
 				new EditorJS({
 					holderId: "textEditor",
-					data: content,
+					data: "",
 					placeholder: "Let's write a awesome story",
 					tools: tools,
 				}),
 			);
 		}
-	}, []);
+	}, [blog]);
+	console.log("Text Editor", textEditor);
+	console.log("Editor Form", content);
+	console.log("Blog", blog);
 	const publishBlog = () => {
 		if (!banner.length) return toast.error("Upload a blog banner to publish the blog!");
 		if (!title.length) return toast.error("Write blog title to publish the blog!");
