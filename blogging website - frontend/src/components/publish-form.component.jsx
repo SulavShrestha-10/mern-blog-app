@@ -15,7 +15,6 @@ const PublishForm = () => {
 		textEditor,
 		setEditorState,
 	} = useContext(EditorContext);
-	console.log("Pubilsh", textEditor);
 	const { userAuth } = useContext(UserContext);
 	const { access_token = {} } = userAuth || {};
 	let characterLimit = 200;
