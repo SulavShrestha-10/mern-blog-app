@@ -30,9 +30,16 @@
 # }
 # GET http://localhost:4000/trending-blogs
 
-POST http://localhost:4000/latest-blogs
+# POST http://localhost:4000/latest-blogs
+# Content-Type: application/json
+
+# {
+#   "page": 2
+# }
+
+POST http://localhost:4000/search-users
 Content-Type: application/json
 
 {
-  "page": 2
+  "query": "ram"
 }

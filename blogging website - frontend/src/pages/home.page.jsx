@@ -11,6 +11,7 @@ import LoadMoreDataBtn from "../components/load-more.component";
 
 const Home = () => {
 	const [blogs, setBlogs] = useState(null);
+	
 	const [trendingBlogs, setTrendingBlogs] = useState(null);
 	const [pageState, setPageState] = useState("home");
 	const categories = ["tech", "sports", "programming", "travel", "game", "ai", "anime"];
