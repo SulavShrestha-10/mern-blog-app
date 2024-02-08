@@ -28,4 +28,11 @@
 #     },
 #     "tags":["Test","new"]
 # }
-GET http://localhost:4000/latest-blogs
+# GET http://localhost:4000/trending-blogs
+
+POST http://localhost:4000/search-blogs
+Content-Type: application/json
+
+{
+  "tag": "anime"
+}
