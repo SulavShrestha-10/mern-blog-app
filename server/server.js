@@ -182,6 +182,98 @@ app.post("/upload-banner", upload.single("file"), async (req, res) => {
 	}
 });
 
+app.post("/latest-blogs", (req, res) => {
+	let { page } = req.body;
+	let maxLimit = 5;
+	Blog.find({ draft: false })
+		.populate("author", "personal_info.profile_img personal_info.username personal_info.fullName -_id")
+		.sort({ publishedAt: -1 })
+		.select("blog_id title des banner activity tags publishedAt -_id")
+		.skip((page - 1) * maxLimit)
+		.limit(maxLimit)
+		.then((blogs) => {
+			return res.status(200).json({ blogs });
+		})
+		.catch((err) => {
+			return res.status(500).json({ error: err.message });
+		});
+});
+
+app.post("/all-latest-blogs-count", (req, res) => {
+	Blog.countDocuments({ draft: false })
+		.then((count) => {
+			return res.status(200).json({ totalDocs: count });
+		})
+		.catch((err) => {
+			console.log(err.message);
+			return res.status(500).json({ error: err.message });
+		});
+});
+
+app.post("/search-blogs-count", (req, res) => {
+	let { tag, query, author } = req.body;
+	let findQuery;
+	if (tag) findQuery = { tags: tag, draft: false };
+	if (query) findQuery = { title: new RegExp(query, "i"), draft: false };
+	if (author) findQuery = { author: author, draft: false };
+	Blog.countDocuments(findQuery)
+		.then((count) => {
+			return res.status(200).json({ totalDocs: count });
+		})
+		.catch((err) => {
+			console.log(err.message);
+			return res.status(500).json({ error: err.message });
+		});
+});
+
+app.get("/trending-blogs", (req, res) => {
+	Blog.find({ draft: false })
+		.populate("author", "personal_info.profile_img personal_info.username personal_info.fullName -_id")
+		.sort({ "activity.total_read": -1, "activity.total_likes": -1, publishedAt: -1 })
+		.select("blog_id title publishedAt -_id")
+		.limit(5)
+		.then((blogs) => {
+			return res.status(200).json({ blogs });
+		})
+		.catch((err) => {
+			return res.status(500).json({ error: err.message });
+		});
+});
+
+app.post("/search-blogs", (req, res) => {
+	let maxLimit = 5;
+	let { tag, page, query, author } = req.body;
+	let findQuery;
+	if (tag) findQuery = { tags: tag, draft: false };
+	if (query) findQuery = { title: new RegExp(query, "i"), draft: false };
+	if (author) findQuery = { author: author, draft: false };
+	Blog.find(findQuery)
+		.populate("author", "personal_info.profile_img personal_info.username personal_info.fullName -_id")
+		.sort({ publishedAt: -1 })
+		.select("blog_id title des banner activity tags publishedAt -_id")
+		.skip((page - 1) * maxLimit)
+		.limit(maxLimit)
+		.then((blogs) => {
+			return res.status(200).json({ blogs });
+		})
+		.catch((err) => {
+			return res.status(500).json({ error: err.message });
+		});
+});
+
+app.post("/search-users", (req, res) => {
+	let { query } = req.body;
+	User.find({ "personal_info.username": new RegExp(query, "i") })
+		.limit(50)
+		.select("personal_info.fullName personal_info.username personal_info.profile_img -_id")
+		.then((users) => {
+			return res.status(200).json({ users });
+		})
+		.catch((err) => {
+			return res.status(500).json({ error: err.message });
+		});
+});
+
 app.post("/create-blog", authenticateUser, (req, res) => {
 	let authorId = req.user;
 	let { title, des, banner, tags, content, draft } = req.body;
@@ -218,6 +310,19 @@ app.post("/create-blog", authenticateUser, (req, res) => {
 				});
 		})
 		.catch((err) => {
+			res.status(500).json({ error: err.message });
+		});
+});
+
+app.post("/get-profile", (req, res) => {
+	const { username } = req.body;
+	User.findOne({ "personal_info.username": username })
+		.select("-personal_info.password -google_auth -updatedAt -blogs")
+		.then((user) => {
+			res.status(200).json(user);
+		})
+		.catch((err) => {
+			console.log(err.message);
 			res.status(500).json({ error: err.message });
 		});
 });

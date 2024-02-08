@@ -24,16 +24,16 @@ const BlogEditor = () => {
 	const { access_token = {} } = userAuth || {};
 	const navigate = useNavigate();
 	useEffect(() => {
-		if (!textEditor.isReady) {
-			setTextEditor(
-				new EditorJS({
-					holderId: "textEditor",
-					data: content,
-					placeholder: "Let's write a awesome story",
-					tools: tools,
-				}),
-			);
-		}
+		// if (!textEditor.isReady) {
+		setTextEditor(
+			new EditorJS({
+				holderId: "textEditor",
+				data: content,
+				placeholder: "Let's write a awesome story",
+				tools: tools,
+			}),
+		);
+		// }
 	}, []);
 	const publishBlog = () => {
 		if (!banner.length) return toast.error("Upload a blog banner to publish the blog!");
