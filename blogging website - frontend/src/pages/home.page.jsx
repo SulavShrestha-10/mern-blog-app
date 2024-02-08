@@ -6,28 +6,46 @@ import Loader from "../components/loader.component";
 import BlogPostCard from "../components/blog-post.component";
 import MinimalBlogPost from "../components/nobanner-blog-post.component";
 import NoDataMessage from "../components/nodata.component";
+import { filterPaginationData } from "../common/filter-pagination-data";
+import LoadMoreDataBtn from "../components/load-more.component";
 
 const Home = () => {
 	const [blogs, setBlogs] = useState(null);
 	const [trendingBlogs, setTrendingBlogs] = useState(null);
 	const [pageState, setPageState] = useState("home");
 	const categories = ["tech", "sports", "programming", "travel", "game", "ai", "anime"];
-	const fetchLatestBlogs = () => {
+
+	const fetchLatestBlogs = (page = 1) => {
 		axios
-			.get(`${import.meta.env.VITE_SERVER_DOMAIN}/latest-blogs`)
-			.then(({ data }) => {
-				setBlogs(data.blogs);
+			.post(`${import.meta.env.VITE_SERVER_DOMAIN}/latest-blogs`, { page })
+			.then(async ({ data }) => {
+				let formattedData = await filterPaginationData({
+					state: blogs,
+					data: data.blogs,
+					page,
+					countRoute: "/all-latest-blogs-count",
+				});
+				setBlogs(formattedData);
 			})
 			.catch((err) => console.log(err));
 	};
-	const fetchBlogsByCategory = () => {
+
+	const fetchBlogsByCategory = (page = 1) => {
 		axios
-			.post(`${import.meta.env.VITE_SERVER_DOMAIN}/search-blogs`, { tag: pageState })
-			.then(({ data }) => {
-				setBlogs(data.blogs);
+			.post(`${import.meta.env.VITE_SERVER_DOMAIN}/search-blogs`, { tag: pageState, page })
+			.then(async ({ data }) => {
+				let formattedData = await filterPaginationData({
+					state: blogs,
+					data: data.blogs,
+					page,
+					countRoute: "/search-blogs-count",
+					dataToSend: { tag: pageState },
+				});
+				setBlogs(formattedData);
 			})
 			.catch((err) => console.log(err));
 	};
+
 	const fetchTrendingBlogs = () => {
 		axios
 			.get(`${import.meta.env.VITE_SERVER_DOMAIN}/trending-blogs`)
@@ -59,13 +77,17 @@ const Home = () => {
 						<>
 							{blogs === null ? (
 								<Loader />
-							) : blogs.length ? (
-								blogs.map((blog, i) => {
+							) : blogs.results.length ? (
+								blogs.results.map((blog, i) => {
 									return <BlogPostCard blog={blog} author={blog.author.personal_info} index={i} key={i} />;
 								})
 							) : (
 								<NoDataMessage message="No blogs published!" />
 							)}
+							<LoadMoreDataBtn
+								state={blogs}
+								fetchDataFunc={pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory}
+							/>
 						</>
 						<>
 							{trendingBlogs === null ? (

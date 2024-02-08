@@ -30,9 +30,9 @@
 # }
 # GET http://localhost:4000/trending-blogs
 
-POST http://localhost:4000/search-blogs
+POST http://localhost:4000/latest-blogs
 Content-Type: application/json
 
 {
-  "tag": "anime"
+  "page": 2
 }
