@@ -314,6 +314,28 @@ app.post("/create-blog", authenticateUser, (req, res) => {
 		});
 });
 
+app.post("/get-blog", (req, res) => {
+	const { blog_id } = req.body;
+	const incrementVal = 1;
+	Blog.findOneAndUpdate({ blog_id }, { $inc: { "activity.total_reads": incrementVal } })
+		.populate("author", "personal_info.fullName personal_info.username personal_info.profile_img")
+		.select("title des content banner activity publishedAt blog_id tags")
+		.then((blog) => {
+			User.findOneAndUpdate(
+				{ "personal_info.username": blog.author.personal_info.username },
+				{ $inc: { "account_info.total_reads": incrementVal } },
+			).catch((err) => {
+				console.log(err.message);
+				res.status(500).json({ error: err.message });
+			});
+			res.status(200).json({ blog });
+		})
+		.catch((err) => {
+			console.log(err.message);
+			res.status(500).json({ error: err.message });
+		});
+});
+
 app.post("/get-profile", (req, res) => {
 	const { username } = req.body;
 	User.findOne({ "personal_info.username": username })

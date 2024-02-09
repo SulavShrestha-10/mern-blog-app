@@ -44,9 +44,16 @@
 #   "query": "ram"
 # }
 
-POST http://localhost:4000/get-profile
+# POST http://localhost:4000/get-profile
+# Content-Type: application/json
+
+# {
+#   "username": "ram"
+# }
+
+POST http://localhost:4000/get-blog
 Content-Type: application/json
 
 {
-  "username": "ram"
+  "blog_id": "Gaming-as-Stress-Relieverg_eS-nX9Zk"
 }
